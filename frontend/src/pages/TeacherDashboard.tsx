@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { apiJson, apiUpload } from '@/lib/api';
+import { useAuth } from './auth/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 type Paper = { paper_id: number; filename: string; upload_date: string };
 
 export default function TeacherDashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -16,8 +20,16 @@ export default function TeacherDashboard() {
   }
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    if (user.role !== 'teacher') {
+      navigate('/admin', { replace: true });
+      return;
+    }
     load();
-  }, []);
+  }, [user, navigate]);
 
   async function onUpload() {
     if (!file) return;
@@ -36,7 +48,13 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-4">Teacher Dashboard</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Teacher Dashboard</h2>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="px-2 py-1 rounded bg-white shadow-sm">{user?.username} · teacher</span>
+            <button className="px-3 py-1.5 bg-gray-800 text-white rounded" onClick={async () => { await logout(); navigate('/'); }}>Logout</button>
+          </div>
+        </div>
         <div className="bg-white p-4 rounded shadow mb-6 flex items-center gap-3">
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
           <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={onUpload}>Encrypt & Upload</button>

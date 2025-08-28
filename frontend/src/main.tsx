@@ -6,6 +6,7 @@ import App from './pages/App';
 import LoginPage from './pages/LoginPage';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import { AuthProvider } from './pages/auth/AuthContext';
 
 const router = createBrowserRouter([
   { path: '/', element: <App /> },
@@ -17,7 +18,9 @@ const router = createBrowserRouter([
 const root = document.getElementById('root')!;
 createRoot(root).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );
 

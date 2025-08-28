@@ -19,6 +19,35 @@ mysql -u root -p < backend/schema.sql
 2) Generate RSA keys
 ```bash
 php backend/scripts/generate_keys.php
+# optional: choose key size
+# Linux/Mac: RSA_KEY_BITS=3072 php backend/scripts/generate_keys.php
+# Windows (PowerShell): $env:RSA_KEY_BITS=3072; php backend/scripts/generate_keys.php
+```
+
+Windows note: if keygen fails with an OpenSSL/system error, try a smaller key size:
+```powershell
+$env:RSA_KEY_BITS=1024; php backend/scripts/generate_keys.php
+```
+The script auto-falls back to 1024 bits on Windows if 2048 fails.
+
+If it still fails on Windows, set `OPENSSL_CONF` to your `openssl.cnf` and retry:
+```powershell
+# Common XAMPP locations (adjust paths as needed):
+$env:OPENSSL_CONF="C:\xampp\apache\bin\openssl.cnf"; php backend/scripts/generate_keys.php
+# or
+$env:OPENSSL_CONF="C:\xampp\php\extras\openssl\openssl.cnf"; php backend/scripts/generate_keys.php
+```
+
+Manual key generation with OpenSSL (Windows/Linux/Mac):
+```bash
+openssl genrsa -out backend/keys/private.pem 2048
+openssl rsa -in backend/keys/private.pem -pubout -out backend/keys/public.pem
+```
+Ensure permissions (Windows: make sure the web server can read; Linux/Mac):
+```bash
+chmod 700 backend/keys
+chmod 600 backend/keys/private.pem
+chmod 644 backend/keys/public.pem
 ```
 
 3) Seed demo users

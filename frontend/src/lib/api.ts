@@ -26,3 +26,22 @@ export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
   return res.json();
 }
 
+export type AuthUser = { user_id: number; username: string; role: 'teacher' | 'admin' };
+
+export async function apiMe(): Promise<AuthUser | null> {
+  const data = await apiJson<{ user: AuthUser | null }>(`/auth/me.php`, { method: 'GET' });
+  return data.user;
+}
+
+export async function apiLogin(username: string, password: string): Promise<AuthUser> {
+  const data = await apiJson<{ user: AuthUser }>(`/auth/login.php`, {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  });
+  return data.user;
+}
+
+export async function apiLogout(): Promise<void> {
+  await apiJson(`/auth/logout.php`, { method: 'POST' });
+}
+

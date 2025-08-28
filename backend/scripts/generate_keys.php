@@ -11,18 +11,46 @@ if (!is_dir(KEYS_DIR)) {
     }
 }
 
+$isWindows = strtoupper(substr(PHP_OS_FAMILY, 0, 3)) === 'WIN';
+
+// On Windows, OpenSSL often requires OPENSSL_CONF to be set. Try to autodetect common locations.
+$opensslConfEnv = getenv('OPENSSL_CONF') ?: '';
+if ($isWindows && $opensslConfEnv === '') {
+    $phpBinDir = dirname(PHP_BINARY);
+    $candidates = [
+        $phpBinDir . DIRECTORY_SEPARATOR . 'extras' . DIRECTORY_SEPARATOR . 'ssl' . DIRECTORY_SEPARATOR . 'openssl.cnf',
+        $phpBinDir . DIRECTORY_SEPARATOR . 'extras' . DIRECTORY_SEPARATOR . 'openssl' . DIRECTORY_SEPARATOR . 'openssl.cnf',
+        $phpBinDir . DIRECTORY_SEPARATOR . 'openssl.cnf',
+        dirname($phpBinDir) . DIRECTORY_SEPARATOR . 'apache' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'openssl.cnf',
+        dirname($phpBinDir) . DIRECTORY_SEPARATOR . 'Apache' . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'openssl.cnf',
+        'C:\\xampp\\apache\\bin\\openssl.cnf',
+        'C:\\xampp\\php\\extras\\openssl\\openssl.cnf',
+        'C:\\xampp\\php\\extras\\ssl\\openssl.cnf',
+        'C:\\wamp64\\bin\\apache\\apache2.4.54\\bin\\openssl.cnf',
+        'C:\\wamp64\\bin\\php\\php8.2.0\\openssl.cnf',
+    ];
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            putenv('OPENSSL_CONF=' . $candidate);
+            $opensslConfEnv = $candidate;
+            break;
+        }
+    }
+}
+
 $requestedBits = (int)($_ENV['RSA_KEY_BITS'] ?? getenv('RSA_KEY_BITS') ?: 0);
 if ($requestedBits <= 0) {
     $requestedBits = 2048;
 }
-
-$isWindows = strtoupper(substr(PHP_OS_FAMILY, 0, 3)) === 'WIN';
 
 // Try requested/2048 first
 $config = [
     'private_key_bits' => $requestedBits,
     'private_key_type' => OPENSSL_KEYTYPE_RSA,
 ];
+if ($isWindows && $opensslConfEnv !== '') {
+    $config['config'] = $opensslConfEnv;
+}
 
 $res = openssl_pkey_new($config);
 

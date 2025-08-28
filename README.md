@@ -19,7 +19,16 @@ mysql -u root -p < backend/schema.sql
 2) Generate RSA keys
 ```bash
 php backend/scripts/generate_keys.php
+# optional: choose key size
+# Linux/Mac: RSA_KEY_BITS=3072 php backend/scripts/generate_keys.php
+# Windows (PowerShell): $env:RSA_KEY_BITS=3072; php backend/scripts/generate_keys.php
 ```
+
+Windows note: if keygen fails with an OpenSSL/system error, try a smaller key size:
+```powershell
+$env:RSA_KEY_BITS=1024; php backend/scripts/generate_keys.php
+```
+The script auto-falls back to 1024 bits on Windows if 2048 fails.
 
 3) Seed demo users
 ```bash

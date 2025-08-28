@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost/safeexam/backend/public/api';
+export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost/safeexam/backend/public/api';
 
 export async function apiJson<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -26,7 +26,7 @@ export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
   return res.json();
 }
 
-export type AuthUser = { user_id: number; username: string; role: 'teacher' | 'admin' };
+export type AuthUser = { user_id: number; username: string; role: 'teacher' | 'admin' | 'student' };
 
 export async function apiMe(): Promise<AuthUser | null> {
   const data = await apiJson<{ user: AuthUser | null }>(`/auth/me.php`, { method: 'GET' });

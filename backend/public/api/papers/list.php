@@ -7,14 +7,16 @@ require_once __DIR__ . '/../../../lib/db.php';
 
 handle_cors();
 require_method('GET');
-require_role(['teacher','admin']);
+require_role(['teacher','admin','student']);
 
 try {
     $pdo = get_pdo();
     if (($_SESSION['role'] ?? '') === 'teacher') {
         $stmt = $pdo->prepare('SELECT paper_id, filename, upload_date FROM exam_papers WHERE teacher_id = ? ORDER BY upload_date DESC');
         $stmt->execute([(int)$_SESSION['user_id']]);
-    } else {
+    } elseif (($_SESSION['role'] ?? '') === 'admin') {
+        $stmt = $pdo->query('SELECT paper_id, filename, upload_date FROM exam_papers ORDER BY upload_date DESC');
+    } else { // student
         $stmt = $pdo->query('SELECT paper_id, filename, upload_date FROM exam_papers ORDER BY upload_date DESC');
     }
     $rows = $stmt->fetchAll();

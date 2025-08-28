@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiJson } from '@/lib/api';
 import { useAuth } from './auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import SiteHeader from './components/SiteHeader';
 
 type Paper = { paper_id: number; filename: string; upload_date: string };
 
@@ -23,7 +24,7 @@ export default function AdminDashboard() {
       return;
     }
     if (user.role !== 'admin') {
-      navigate('/teacher', { replace: true });
+      navigate(user.role === 'teacher' ? '/teacher' : '/student', { replace: true });
       return;
     }
     load();
@@ -37,14 +38,14 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <SiteHeader right={<>
+        <span className="px-2 py-1 rounded bg-white/20">{user?.username} · admin</span>
+        <button className="px-3 py-1.5 bg-white text-indigo-700 rounded hover:bg-white/90" onClick={async () => { await logout(); navigate('/'); }}>Logout</button>
+      </>} />
+      <div className="max-w-3xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="px-2 py-1 rounded bg-white shadow-sm">{user?.username} · admin</span>
-            <button className="px-3 py-1.5 bg-gray-800 text-white rounded" onClick={async () => { await logout(); navigate('/'); }}>Logout</button>
-          </div>
         </div>
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-semibold mb-2">Encrypted Papers</h3>
